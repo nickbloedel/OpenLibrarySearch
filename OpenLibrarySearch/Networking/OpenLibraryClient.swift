@@ -15,7 +15,7 @@ struct OpenLibraryClient {
         self.session = session
         self.decoder = JSONDecoder()
     }
-    
+    // Should make into own service, convert to [Book] within
     func fetchBooksByTitle(_ title: String) async throws -> BookResponse {
         try await request(request: OpenLibraryRequest.searchTitle(title: title))
     }
@@ -36,9 +36,12 @@ struct OpenLibraryClient {
             throw APIError.invalidURL
         }
         
+        // handle rate limit
         switch httpResponse.statusCode {
         case 200:
             break
+        case 429:
+            throw APIError.rateLimit
         default:
             throw APIError.httpError(code: httpResponse.statusCode, message: String(data: data, encoding: .utf8) ?? "")
         }

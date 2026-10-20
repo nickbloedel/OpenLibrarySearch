@@ -17,7 +17,7 @@ struct RecommendationView: View {
     
     @State var bookRecommendations: [Book] = []
     
-    init(client: OpenLibraryClient = OpenLibraryClient(), book: Book = .preview) {
+    init(client: OpenLibraryClient = OpenLibraryClient(), book: Book) {
         self.client = client
         self.book = book
     }
