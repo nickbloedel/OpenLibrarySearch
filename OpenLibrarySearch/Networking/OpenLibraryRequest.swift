@@ -9,6 +9,7 @@ import Foundation
 
 enum OpenLibraryRequest: Request {
     
+    // can add limit, offsets here (maybe 1 fetch with enum for title, author, subject)
     case searchTitle(title: String)
     case searchAuthor(author: String)
     case searchSubject(subject: String)
@@ -21,8 +22,9 @@ enum OpenLibraryRequest: Request {
         "/search.json"
     }
     
-    func queryItems(limit: Int = 50, offset: Int = 0) -> [URLQueryItem] {
+    var queryItems: [URLQueryItem] {
         var items: [URLQueryItem] = []
+        
         switch self {
         case .searchTitle(let title):
             items.append(URLQueryItem(name: "title", value: title))
@@ -31,7 +33,10 @@ enum OpenLibraryRequest: Request {
         case .searchSubject(let subject):
             items.append(URLQueryItem(name: "subject", value: subject))
         }
+        
         // hard coding for now, can add pagination/infinite scroll later
+        let offset = 0
+        let limit = 50
         items.append(URLQueryItem(name: "offset", value: String(offset)))
         items.append(URLQueryItem(name: "limit", value: String(limit)))
         

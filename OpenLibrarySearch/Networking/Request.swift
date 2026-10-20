@@ -10,6 +10,6 @@ import Foundation
 protocol Request {
     var baseURL: String { get }
     var path: String { get }
-    func queryItems(limit: Int, offset: Int) -> [URLQueryItem]
+    var queryItems: [URLQueryItem] { get }
     // headers, method, ...
 }

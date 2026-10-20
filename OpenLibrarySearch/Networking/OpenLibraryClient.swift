@@ -15,20 +15,8 @@ struct OpenLibraryClient {
         self.session = session
         self.decoder = JSONDecoder()
     }
-    // Should make into own service, convert to [Book] within
-    func fetchBooksByTitle(_ title: String) async throws -> BookResponse {
-        try await request(request: OpenLibraryRequest.searchTitle(title: title))
-    }
-    
-    func fetchBooksByAuthor(_ author: String) async throws -> BookResponse {
-        try await request(request: OpenLibraryRequest.searchAuthor(author: author))
-    }
-    
-    func fetchBooksBySubject(_ subject: String) async throws -> BookResponse {
-        try await request(request: OpenLibraryRequest.searchSubject(subject: subject))
-    }
-    
-    private func request<T: Decodable>(request: OpenLibraryRequest) async throws -> T {
+
+    func request<T: Decodable>(request: Request) async throws -> T {
         let urlRequest = try buildRequest(request: request)
         let (data, response) = try await session.data(for: urlRequest)
         
@@ -53,7 +41,7 @@ struct OpenLibraryClient {
         }
     }
     
-    private func buildRequest(request: OpenLibraryRequest) throws -> URLRequest {
+    func buildRequest(request: Request) throws -> URLRequest {
         guard let url = URL(string: request.baseURL) else {
             throw APIError.invalidURL
         }
@@ -61,7 +49,7 @@ struct OpenLibraryClient {
             throw APIError.invalidURL
         }
         
-        urlComponents.queryItems = request.queryItems()
+        urlComponents.queryItems = request.queryItems
         
         guard let builtURL = urlComponents.url else {
             throw APIError.invalidURL

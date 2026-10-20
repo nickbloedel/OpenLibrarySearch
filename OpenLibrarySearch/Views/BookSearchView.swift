@@ -12,11 +12,12 @@ struct BookSearchView: View {
     @State var searchText: String = ""
     @State var selectedBook: Book? = nil
     @State var isSearching: Bool = false
-    private let client: OpenLibraryClient
+    private let bookService: BookService
     
-    init(client: OpenLibraryClient = OpenLibraryClient()) {
-        self.client = client
+    init(bookService: BookService = BookService()) {
+        self.bookService = bookService
     }
+    
     var body: some View {
         NavigationStack {
             List {
@@ -54,15 +55,14 @@ struct BookSearchView: View {
                 try await Task.sleep(for: .milliseconds(400))
                 try Task.checkCancellation()
                 defer { isSearching = false }
-                let response = try await client.fetchBooksByTitle(searchText)
-                let results = response.books
-                if results.count == 1 {
+                let books = try await bookService.fetchBooksByTitle(searchText)
+                if books.count == 1 {
                     // navigate directly to RecommendationView for the single result
-                    if let only = results.first {
+                    if let only = books.first {
                         self.selectedBook = only
                     }
                 }
-                bookList = results
+                bookList = books
             } catch is CancellationError {
                 // do nothing
             } catch {

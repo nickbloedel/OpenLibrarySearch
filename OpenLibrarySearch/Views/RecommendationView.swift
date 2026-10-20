@@ -12,15 +12,16 @@ struct RecommendationView: View {
     @Environment(\.modelContext) private var modelContext
     @Query var savedBooks: [BookModel]
     @State var isLoading: Bool = false
-    private let client: OpenLibraryClient
+    private let bookService: BookService
     var book: Book
     
     @State var bookRecommendations: [Book] = []
     
-    init(client: OpenLibraryClient = OpenLibraryClient(), book: Book) {
-        self.client = client
+    init(bookService: BookService = BookService(), book: Book) {
         self.book = book
+        self.bookService = bookService
     }
+    
     var body: some View {
         List {
             ForEach(bookRecommendations) { book in
@@ -35,9 +36,11 @@ struct RecommendationView: View {
             }
         }
         .overlay {
+            // Maybe only show if list is empty?
             if isLoading {
                 ProgressView()
             }
+            // ContentUnavailableView if none found
         }
         .navigationTitle("Recommendations")
         .task {
@@ -65,8 +68,8 @@ extension RecommendationView {
         // Two API calls, we can just do them serially
         if let author = book.author {
             do {
-                let authorBooksResponse =  try await client.fetchBooksByAuthor(author)
-                booksSet.formUnion(authorBooksResponse.books)
+                let authorBooks =  try await bookService.fetchBooksByAuthor(author)
+                booksSet.formUnion(authorBooks)
             } catch {
                 print("Failed to get books from author: \(author)")
             }
@@ -74,8 +77,8 @@ extension RecommendationView {
         
         if let subject = book.subject {
             do {
-                let subjectBooksResponse = try await client.fetchBooksBySubject(subject)
-                booksSet.formUnion(subjectBooksResponse.books)
+                let subjectBooks = try await bookService.fetchBooksBySubject(subject)
+                booksSet.formUnion(subjectBooks)
             } catch {
                 print("Failed to get books for subject: \(subject)")
             }
@@ -85,5 +88,5 @@ extension RecommendationView {
 }
 
 #Preview {
-    RecommendationView(book: .preview)
+    RecommendationView(bookService: BookService(), book: .preview)
 }
